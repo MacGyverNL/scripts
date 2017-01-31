@@ -153,7 +153,7 @@ url_ipaddr = r'%s(?:\.%s){3}' % (url_octet, url_octet)
 
 url_hexdig = r'[0-9a-fA-F]'
 url_h16 = r'%s{1,4}' % (url_hexdig)
-url_ls32 = r'%s:%s|%s' % (url_h16, url_h16, url_ipaddr)
+url_ls32 = r'(?:%s:%s|%s)' % (url_h16, url_h16, url_ipaddr)
 url_ip6addr = [r'(?:%s:){6}%s' % (url_h16, url_ls32),
                r'::(?:%s:){5}%s' % (url_h16, url_ls32),
                r'%s?::(?:%s:){4}%s' % (url_h16, url_h16, url_ls32),
