@@ -185,7 +185,9 @@ url_ipath_abempty = r'(?:/%s*)*' % (url_ipchar)
 
 # Some complex stuff about reserved parts of the UCS namespace we're not doing
 # in iquery, so iquery == ifragment.
-url_iquery = r'(?:%s|/|\?)*' % (url_ipchar)
+# It seems that [ and ] are not used as delimiters in iquery and ifragment, so
+# allow them in these segments.
+url_iquery = r'(?:%s|/|\?|\[\])*' % (url_ipchar)
 url_ifragment = url_iquery
 
 # Grab one additional character (if present) so that we can later determine
@@ -936,20 +938,25 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
             # sentence terminator.
             if trailer is None or trailer == ' ':
                 url = url[:-1]
-        elif url[-1] == ')':
+        elif url[-1] == ')' or url[-1] == ']':
             # Tough one. First check whether the URL is followed by
             # a space or end of line.
             if trailer is None or trailer == ' ':
-            # Check if the ()s would be balanced inside the URL.
-                opening = url.count('(')
-                closing = url.count(')')
+                closer = url[-1]
+                if closer == ")":
+                    opener = "("
+                elif closer == "]":
+                    opener = "["
+                # Check if the brackets would be balanced inside the URL.
+                opening = url.count(opener)
+                closing = url.count(closer)
                 if opening < closing:
-                    # Are parentheses outside of the URL unbalanced?
+                    # Are brackets outside of the URL unbalanced?
                     match_start, match_end = match.span('url')
                     prior = message[:match_start]
                     after = message[match_end:]
-                    opening = prior.count('(') + after.count('(')
-                    closing = prior.count(')') + after.count(')')
+                    opening = prior.count(opener) + after.count(opener)
+                    closing = prior.count(closer) + after.count(closer)
                     if opening > closing:
                         url = url[:-1]
 
