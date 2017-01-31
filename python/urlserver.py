@@ -157,9 +157,12 @@ url_ls32 = r'(?:%s:%s|%s)' % (url_h16, url_h16, url_ipaddr)
 url_ip6addr = [r'(?:%s:){6}%s' % (url_h16, url_ls32),
                r'::(?:%s:){5}%s' % (url_h16, url_ls32),
                r'%s?::(?:%s:){4}%s' % (url_h16, url_h16, url_ls32),
-               r'(?:(?:%s:){0,1}%s)?::(?:%s:){3}%s' % (url_h16, url_h16, url_h16, url_ls32),
-               r'(?:(?:%s:){0,2}%s)?::(?:%s:){2}%s' % (url_h16, url_h16, url_h16, url_ls32),
-               r'(?:(?:%s:){0,3}%s)?::(?:%s:)%s' % (url_h16, url_h16, url_h16, url_ls32),
+               r'(?:(?:%s:){0,1}%s)?::(?:%s:){3}%s' % (url_h16, url_h16,
+                                                       url_h16, url_ls32),
+               r'(?:(?:%s:){0,2}%s)?::(?:%s:){2}%s' % (url_h16, url_h16,
+                                                       url_h16, url_ls32),
+               r'(?:(?:%s:){0,3}%s)?::(?:%s:)%s' % (url_h16, url_h16, url_h16,
+                                                    url_ls32),
                r'(?:(?:%s:){0,4}%s)?::%s' % (url_h16, url_h16, url_ls32),
                r'(?:(?:%s:){0,5}%s)?::%s' % (url_h16, url_h16, url_h16),
                r'(?:(?:%s:){0,6}%s)?::' % (url_h16, url_h16)]
@@ -173,9 +176,11 @@ url_iunreserved = r'[\w\-.~]'
 
 url_pctencoded = r'%%%s{2}' % (url_hexdig)
 
-url_iregname = r'(?:%s|%s|%s)*' % (url_iunreserved, url_pctencoded, url_subdelims)
+url_iregname = r'(?:%s|%s|%s)*' % (url_iunreserved, url_pctencoded,
+                                   url_subdelims)
 
-url_iuserinfo = r'(?:%s|%s|%s|:)*' % (url_iunreserved, url_pctencoded, url_subdelims)
+url_iuserinfo = r'(?:%s|%s|%s|:)*' % (url_iunreserved, url_pctencoded,
+                                      url_subdelims)
 url_ihost = r'(?:%s|%s|%s)' % (url_iplit, url_ipaddr, url_iregname)
 url_iauth = r'(?:%s@)?%s(?::\d*)?' % (url_iuserinfo, url_ihost)
 
@@ -193,21 +198,11 @@ url_ifragment = url_iquery
 # Grab one additional character (if present) so that we can later determine
 # whether the user knew what they were doing.
 url_full = r'(?P<url>(?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?)(?P<trailer>.)?' % (
-    url_scheme, url_iauth,
-#url_full = r'(?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?' % (url_scheme, url_iauth,
-    url_ipath_abempty,
-    url_iquery,
-    url_ifragment)
-
-#url_label = r'[0-9a-z][-0-9a-z]*[0-9a-z]?'
-#url_domain = r'%s(?:\.%s)*\.[a-z][-0-9a-z]*[a-z]?' % (url_label, url_label)
+    url_scheme, url_iauth, url_ipath_abempty, url_iquery, url_ifragment)
 
 urlserver = {
     'socket': None,
     'hook_fd': None,
-#    'regex': re.compile(r'(\w+://(?:%s|%s)(?::\d+)?(?:/[^\])>\s]*)?)' %
-#                        (url_domain, url_ipaddr),
-#                        re.IGNORECASE),
 #    'regex': re.compile(url_full, re.IGNORECASE | re.UNICODE),
     'regex': re.compile(url_full, re.IGNORECASE),
     'urls': {},
