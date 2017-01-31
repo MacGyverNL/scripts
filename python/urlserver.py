@@ -190,11 +190,12 @@ url_ifragment = url_iquery
 
 # Grab one additional character (if present) so that we can later determine
 # whether the user knew what they were doing.
-#url_full = r'((?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?)(.)?' % (url_scheme, url_iauth,
-url_full = r'(?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?' % (url_scheme, url_iauth,
-                                                        url_ipath_abempty,
-                                                        url_iquery,
-                                                        url_ifragment)
+url_full = r'(?P<url>(?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?)(?P<trailer>.)?' % (
+    url_scheme, url_iauth,
+#url_full = r'(?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?' % (url_scheme, url_iauth,
+    url_ipath_abempty,
+    url_iquery,
+    url_ifragment)
 
 #url_label = r'[0-9a-z][-0-9a-z]*[0-9a-z]?'
 #url_domain = r'%s(?:\.%s)*\.[a-z][-0-9a-z]*[a-z]?' % (url_label, url_label)
@@ -205,6 +206,7 @@ urlserver = {
 #    'regex': re.compile(r'(\w+://(?:%s|%s)(?::\d+)?(?:/[^\])>\s]*)?)' %
 #                        (url_domain, url_ipaddr),
 #                        re.IGNORECASE),
+#    'regex': re.compile(url_full, re.IGNORECASE | re.UNICODE),
     'regex': re.compile(url_full, re.IGNORECASE),
     'urls': {},
     'number': 0,
@@ -919,7 +921,38 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
 
     # shorten URL(s) in message
     urls_short = []
-    for url in urlserver['regex'].findall(message):
+    for match in urlserver['regex'].finditer(message):
+        url = match.group('url')
+        trailer = match.group('trailer')
+        # Heuristics
+        if url[-1] == ',':
+            # Does the URL contain other commas? If so, don't strip.
+            # Is the URL followed by a space? If not, don't strip.
+            if trailer == ' ' and url[:-1].count(',') == 0:
+                url = url[:-1]
+        elif url[-1] == '.':
+            # Strip if the URL is followed by whitespace *or* nothing.
+            # Nothing seems to use a . at the end, and it's a natural
+            # sentence terminator.
+            if trailer is None or trailer == ' ':
+                url = url[:-1]
+        elif url[-1] == ')':
+            # Tough one. First check whether the URL is followed by
+            # a space or end of line.
+            if trailer is None or trailer == ' ':
+            # Check if the ()s would be balanced inside the URL.
+                opening = url.count('(')
+                closing = url.count(')')
+                if opening < closing:
+                    # Are parentheses outside of the URL unbalanced?
+                    match_start, match_end = match.span('url')
+                    prior = message[:match_start]
+                    after = message[match_end:]
+                    opening = prior.count('(') + after.count('(')
+                    closing = prior.count(')') + after.count(')')
+                    if opening > closing:
+                        url = url[:-1]
+
         if len(url) >= min_length:
             if urlserver_settings['msg_ignore_dup_urls'] == 'on':
                 same_urls = [key for key, value in urlserver['urls'].items()
