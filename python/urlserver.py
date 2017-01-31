@@ -924,8 +924,10 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
     # shorten URL(s) in message
     urls_short = []
     for match in urlserver['regex'].finditer(message):
+
         url = match.group('url')
         trailer = match.group('trailer')
+
         # Heuristics
         if url[-1] == ',':
             # Does the URL contain other commas? If so, don't strip.
@@ -951,14 +953,27 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
                 opening = url.count(opener)
                 closing = url.count(closer)
                 if opening < closing:
-                    # Are brackets outside of the URL unbalanced?
                     match_start, match_end = match.span('url')
+                    # Is the URL *immediately* preceded by an opener?
                     prior = message[:match_start]
-                    after = message[match_end:]
-                    opening = prior.count(opener) + after.count(opener)
-                    closing = prior.count(closer) + after.count(closer)
-                    if opening > closing:
+                    if prior[-1] == opener:
                         url = url[:-1]
+                    else:
+                        after = message[match_end:]
+                        # Are brackets outside of the URL unbalanced?
+                        opening = prior.count(opener) + after.count(opener)
+                        closing = prior.count(closer) + after.count(closer)
+                        if opening > closing:
+                            url = url[:-1]
+        elif url[-1] == "'":
+            # Another doozy. Can't really work with balance because of
+            # contractions such as "can't".
+            # So let's simply check for enclosing, but only if there's not
+            # another delimiter.
+            if trailer is None or trailer == ' ':
+                if message[match.start('url') - 1] == "'":
+                    url = url[:-1]
+        # End heuristics
 
         if len(url) >= min_length:
             if urlserver_settings['msg_ignore_dup_urls'] == 'on':
