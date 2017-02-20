@@ -951,7 +951,7 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
                     match_start, match_end = match.span('url')
                     # Is the URL *immediately* preceded by an opener?
                     prior = message[:match_start]
-                    if prior[-1] == opener:
+                    if prior and prior[-1] == opener:
                         url = url[:-1]
                     else:
                         after = message[match_end:]
@@ -966,7 +966,8 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
             # So let's simply check for enclosing, but only if there's not
             # another delimiter.
             if trailer is None or trailer == ' ':
-                if message[match.start('url') - 1] == "'":
+                match_start = match.start('url')
+                if match_start > 0 and message[match_start - 1] == "'":
                     url = url[:-1]
         # End heuristics
 
