@@ -203,7 +203,6 @@ url_full = r'(?P<url>(?:%s)://(?:%s)(?:%s)(?:\?%s)?(?:#%s)?)(?P<trailer>.)?' % (
 urlserver = {
     'socket': None,
     'hook_fd': None,
-#    'regex': re.compile(url_full, re.IGNORECASE | re.UNICODE),
     'regex': re.compile(url_full, re.IGNORECASE),
     'urls': {},
     'number': 0,
@@ -919,11 +918,11 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
     # shorten URL(s) in message
     urls_short = []
     for match in urlserver['regex'].finditer(message):
-
         url = match.group('url')
         trailer = match.group('trailer')
 
-        # Heuristics
+        # Heuristics for dealing with valid URI characters used as URI
+        # delimiters.
         if url[-1] == ',':
             # Does the URL contain other commas? If so, don't strip.
             # Is the URL followed by a space? If not, don't strip.
@@ -940,10 +939,10 @@ def urlserver_update_urllist(buffer_full_name, buffer_short_name, tags, prefix,
             # a space or end of line.
             if trailer is None or trailer == ' ':
                 closer = url[-1]
-                if closer == ")":
-                    opener = "("
-                elif closer == "]":
-                    opener = "["
+                if closer == ')':
+                    opener = '('
+                elif closer == ']':
+                    opener = '['
                 # Check if the brackets would be balanced inside the URL.
                 opening = url.count(opener)
                 closing = url.count(closer)
