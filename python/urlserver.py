@@ -44,6 +44,8 @@
 #
 # History:
 #
+# 2018-10-01, Pol Van Aubel <dev@polvanaubel.com>:
+#     v2.4: rework URL matching to positive regex match with heuristics
 # 2018-09-30, Sébastien Helleu <flashcode@flashtux.org>:
 #     v2.3: fix regex in help of option "http_allowed_ips"
 # 2017-07-26, Sébastien Helleu <flashcode@flashtux.org>:
